@@ -231,6 +231,21 @@ INSERT INTO `sp_category` (`cat_id`, `name_cn`, `name_en`, `remark`) VALUES
 /*!40000 ALTER TABLE `sp_category` ENABLE KEYS */;
 
 
+-- 导出  表 spider.sp_detail_pattern 结构
+CREATE TABLE IF NOT EXISTS `sp_detail_pattern` (
+  `spider_url` varchar(255) NOT NULL COMMENT '采集url地址',
+  `name_pattern` varchar(100) DEFAULT NULL COMMENT '商品名称的匹配规则',
+  `price_pattern` varchar(100) DEFAULT NULL COMMENT '价格的匹配规则',
+  `img_pattern` varchar(100) DEFAULT NULL COMMENT '图片的匹配规则',
+  `description_pattern` varchar(100) DEFAULT NULL COMMENT '描述的匹配规则',
+  PRIMARY KEY (`spider_url`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='采集站点详情页的匹配规则';
+
+-- 正在导出表  spider.sp_detail_pattern 的数据：~0 rows (大约)
+/*!40000 ALTER TABLE `sp_detail_pattern` DISABLE KEYS */;
+/*!40000 ALTER TABLE `sp_detail_pattern` ENABLE KEYS */;
+
+
 -- 导出  表 spider.sp_goods 结构
 CREATE TABLE IF NOT EXISTS `sp_goods` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -298,6 +313,25 @@ CREATE TABLE IF NOT EXISTS `sp_websites` (
 -- 正在导出表  spider.sp_websites 的数据：~0 rows (大约)
 /*!40000 ALTER TABLE `sp_websites` DISABLE KEYS */;
 /*!40000 ALTER TABLE `sp_websites` ENABLE KEYS */;
+
+
+-- 导出  表 spider.sp_websites_pattern 结构
+CREATE TABLE IF NOT EXISTS `sp_websites_pattern` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `website_id` int(10) unsigned NOT NULL COMMENT '采集站点id',
+  `name_pattern` varchar(100) DEFAULT NULL COMMENT '商品名称的匹配规则',
+  `price_pattern` varchar(100) DEFAULT NULL COMMENT '价格的匹配规则',
+  `img_pattern` varchar(100) DEFAULT NULL COMMENT '图片的匹配规则',
+  `description_pattern` varchar(100) DEFAULT NULL COMMENT '描述的匹配规则',
+  `flag` varchar(1) NOT NULL DEFAULT '1' COMMENT '1-列表页，2-详情页',
+  PRIMARY KEY (`id`),
+  KEY `website_id` (`website_id`),
+  KEY `flag` (`flag`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='采集站点列表页详情页通用匹配规则';
+
+-- 正在导出表  spider.sp_websites_pattern 的数据：~0 rows (大约)
+/*!40000 ALTER TABLE `sp_websites_pattern` DISABLE KEYS */;
+/*!40000 ALTER TABLE `sp_websites_pattern` ENABLE KEYS */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
 /*!40014 SET FOREIGN_KEY_CHECKS=IF(@OLD_FOREIGN_KEY_CHECKS IS NULL, 1, @OLD_FOREIGN_KEY_CHECKS) */;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -233,12 +233,14 @@ INSERT INTO `sp_category` (`cat_id`, `name_cn`, `name_en`, `remark`) VALUES
 
 -- 导出  表 spider.sp_detail_pattern 结构
 CREATE TABLE IF NOT EXISTS `sp_detail_pattern` (
-  `spider_url` varchar(255) NOT NULL COMMENT '采集url地址',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `website_id` int(10) unsigned NOT NULL COMMENT '采集站点id',
   `name_pattern` varchar(100) DEFAULT NULL COMMENT '商品名称的匹配规则',
   `price_pattern` varchar(100) DEFAULT NULL COMMENT '价格的匹配规则',
   `img_pattern` varchar(100) DEFAULT NULL COMMENT '图片的匹配规则',
   `description_pattern` varchar(100) DEFAULT NULL COMMENT '描述的匹配规则',
-  PRIMARY KEY (`spider_url`)
+  PRIMARY KEY (`id`),
+  KEY `website_id` (`website_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='采集站点详情页的匹配规则';
 
 -- 正在导出表  spider.sp_detail_pattern 的数据：~0 rows (大约)
@@ -246,19 +248,39 @@ CREATE TABLE IF NOT EXISTS `sp_detail_pattern` (
 /*!40000 ALTER TABLE `sp_detail_pattern` ENABLE KEYS */;
 
 
+-- 导出  表 spider.sp_detail_urls 结构
+CREATE TABLE IF NOT EXISTS `sp_detail_urls` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `website_id` int(10) unsigned NOT NULL COMMENT '采集站点id',
+  `url` varchar(255) NOT NULL COMMENT '采集url',
+  `rule_id` int(10) unsigned DEFAULT NULL COMMENT '采集规则id',
+  `status` varchar(1) NOT NULL DEFAULT '1' COMMENT '1-可以采集，2-不再采集',
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  KEY `website_id` (`website_id`),
+  KEY `status` (`status`),
+  KEY `rule_id` (`rule_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='采集url-详情页';
+
+-- 正在导出表  spider.sp_detail_urls 的数据：~0 rows (大约)
+/*!40000 ALTER TABLE `sp_detail_urls` DISABLE KEYS */;
+/*!40000 ALTER TABLE `sp_detail_urls` ENABLE KEYS */;
+
+
 -- 导出  表 spider.sp_goods 结构
 CREATE TABLE IF NOT EXISTS `sp_goods` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `url_id` int(10) unsigned NOT NULL COMMENT '商品在采集站点的url的id，对应于sp_urls的id',
-  `name_en` varchar(255) NOT NULL COMMENT '商品中文标题',
-  `cat_id` varchar(10) NOT NULL COMMENT '类目id',
-  `name_cn` varchar(255) NOT NULL COMMENT '商品英文标题',
-  `content` text NOT NULL COMMENT '商品详情描述',
+  `name_en` varchar(255) DEFAULT NULL COMMENT '商品英文标题',
+  `website_id` int(10) unsigned NOT NULL COMMENT '采集站点id',
+  `cat_id` varchar(10) DEFAULT NULL COMMENT '类目id',
+  `name_cn` varchar(255) DEFAULT NULL COMMENT '商品中文标题',
+  `content` text COMMENT '商品详情描述',
   `price` decimal(10,2) unsigned NOT NULL COMMENT '商品价格',
   `currency` varchar(1) NOT NULL COMMENT '币种，对应于sp_websites中的currency',
-  `imgs` text NOT NULL COMMENT '商品图片，多张以逗号分隔',
-  `created` int(10) unsigned NOT NULL COMMENT '创建时间',
-  `updated` int(10) unsigned NOT NULL COMMENT '最后一次更新的时间',
+  `img` text COMMENT '商品图片',
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated` timestamp NULL DEFAULT NULL COMMENT '最后一次更新的时间',
   PRIMARY KEY (`id`),
   UNIQUE KEY `url_id` (`url_id`),
   KEY `cat_id` (`cat_id`)
@@ -282,19 +304,56 @@ CREATE TABLE IF NOT EXISTS `sp_goods_history` (
 /*!40000 ALTER TABLE `sp_goods_history` ENABLE KEYS */;
 
 
--- 导出  表 spider.sp_urls 结构
-CREATE TABLE IF NOT EXISTS `sp_urls` (
+-- 导出  表 spider.sp_list_pattern 结构
+CREATE TABLE IF NOT EXISTS `sp_list_pattern` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `website_id` int(10) unsigned NOT NULL COMMENT '采集站点id',
+  `cat_id` varchar(10) DEFAULT NULL COMMENT '商品的类目id',
+  `pattern` varchar(100) DEFAULT NULL COMMENT '大前提下的匹配规则',
+  `name_pattern` varchar(100) DEFAULT NULL COMMENT '商品名称的匹配规则',
+  `name_pattern_attr` varchar(30) DEFAULT NULL COMMENT '商品名称的抽取规则，如果有则代表以该名称作为属性来抽取，否则以该标签的内容作为抽取规则',
+  `url_pattern` varchar(100) DEFAULT NULL COMMENT '商品详情页链接地址的匹配规则',
+  `url_pattern_attr` varchar(30) DEFAULT 'href' COMMENT '商品详情页链接地址的抽取规则',
+  `price_pattern` varchar(100) DEFAULT NULL COMMENT '价格的匹配规则',
+  `price_pattern_attr` varchar(30) DEFAULT NULL COMMENT '价格的抽取规则',
+  `img_pattern` varchar(100) DEFAULT NULL COMMENT '图片的匹配规则',
+  `img_pattern_attr` varchar(30) DEFAULT 'src' COMMENT '图片的抽取规则',
+  `description_pattern` varchar(100) DEFAULT NULL COMMENT '描述的匹配规则',
+  `description_pattern_attr` varchar(30) DEFAULT NULL COMMENT '描述的抽取规则',
+  `page` varchar(20) DEFAULT NULL COMMENT 'url地址中页码的变量名称',
+  `page_step` varchar(10) DEFAULT NULL COMMENT '页数每次增加的幅度',
+  PRIMARY KEY (`id`),
+  KEY `website_id` (`website_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='采集站点列表页特殊匹配规则';
+
+-- 正在导出表  spider.sp_list_pattern 的数据：~2 rows (大约)
+/*!40000 ALTER TABLE `sp_list_pattern` DISABLE KEYS */;
+INSERT INTO `sp_list_pattern` (`id`, `website_id`, `cat_id`, `pattern`, `name_pattern`, `name_pattern_attr`, `url_pattern`, `url_pattern_attr`, `price_pattern`, `price_pattern_attr`, `img_pattern`, `img_pattern_attr`, `description_pattern`, `description_pattern_attr`, `page`, `page_step`) VALUES
+	(1, 1, NULL, 'ul.s-result-list li', 'a h2', NULL, NULL, NULL, '.a-spacing-top-small .a-row a.a-text-normal span.a-color-price', NULL, '.s-consumables-image img', 'src', NULL, NULL, 'page', '1'),
+	(2, 2, NULL, '.grid div.items .item', '.title a.J_ClickStat', NULL, '.pic a', 'data-href', '.price', NULL, '.pic img', 'data-src', NULL, NULL, 's', '60');
+/*!40000 ALTER TABLE `sp_list_pattern` ENABLE KEYS */;
+
+
+-- 导出  表 spider.sp_list_urls 结构
+CREATE TABLE IF NOT EXISTS `sp_list_urls` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `website_id` int(10) unsigned NOT NULL COMMENT '采集站点id',
   `url` varchar(255) NOT NULL COMMENT '采集url',
+  `rule_id` int(10) unsigned DEFAULT NULL COMMENT '采集规则id',
+  `status` varchar(1) NOT NULL DEFAULT '1' COMMENT '1-可以采集，2-不再采集',
   `created` int(10) unsigned NOT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`),
-  KEY `website_id` (`website_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='采集url';
+  KEY `website_id` (`website_id`),
+  KEY `status` (`status`),
+  KEY `rule_id` (`rule_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='采集url-列表页';
 
--- 正在导出表  spider.sp_urls 的数据：~0 rows (大约)
-/*!40000 ALTER TABLE `sp_urls` DISABLE KEYS */;
-/*!40000 ALTER TABLE `sp_urls` ENABLE KEYS */;
+-- 正在导出表  spider.sp_list_urls 的数据：~2 rows (大约)
+/*!40000 ALTER TABLE `sp_list_urls` DISABLE KEYS */;
+INSERT INTO `sp_list_urls` (`id`, `website_id`, `url`, `rule_id`, `status`, `created`) VALUES
+	(1, 1, 'https://www.amazon.com/b/ref=s9_acss_bw_cg_BeautCat_2a1?node=11060451&pf_rd_m=ATVPDKIKX0DER&pf_rd_s=', 1, '1', 1465784128),
+	(2, 2, 'https://s.taobao.com/list?q=%E9%98%B2%E6%99%92&cat=1801%2C50071436%2C50010788&style=grid&seller_type=taobao', 2, '1', 1466049231);
+/*!40000 ALTER TABLE `sp_list_urls` ENABLE KEYS */;
 
 
 -- 导出  表 spider.sp_websites 结构
@@ -308,30 +367,14 @@ CREATE TABLE IF NOT EXISTS `sp_websites` (
   `remark` varchar(255) DEFAULT NULL COMMENT '网站备注',
   `created` int(10) unsigned DEFAULT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='采集站点';
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COMMENT='采集站点';
 
--- 正在导出表  spider.sp_websites 的数据：~0 rows (大约)
+-- 正在导出表  spider.sp_websites 的数据：~1 rows (大约)
 /*!40000 ALTER TABLE `sp_websites` DISABLE KEYS */;
+INSERT INTO `sp_websites` (`id`, `name_en`, `name_cn`, `url`, `content`, `currency`, `remark`, `created`) VALUES
+	(1, 'Amazon.com', '亚马逊（美国）', 'http://www.amazon.com', NULL, '2', NULL, 1465784128),
+	(2, 'Taobao.com', '淘宝网', 'http://www.taobao.com', NULL, '1', NULL, 1466049231);
 /*!40000 ALTER TABLE `sp_websites` ENABLE KEYS */;
-
-
--- 导出  表 spider.sp_websites_pattern 结构
-CREATE TABLE IF NOT EXISTS `sp_websites_pattern` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `website_id` int(10) unsigned NOT NULL COMMENT '采集站点id',
-  `name_pattern` varchar(100) DEFAULT NULL COMMENT '商品名称的匹配规则',
-  `price_pattern` varchar(100) DEFAULT NULL COMMENT '价格的匹配规则',
-  `img_pattern` varchar(100) DEFAULT NULL COMMENT '图片的匹配规则',
-  `description_pattern` varchar(100) DEFAULT NULL COMMENT '描述的匹配规则',
-  `flag` varchar(1) NOT NULL DEFAULT '1' COMMENT '1-列表页，2-详情页',
-  PRIMARY KEY (`id`),
-  KEY `website_id` (`website_id`),
-  KEY `flag` (`flag`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='采集站点列表页详情页通用匹配规则';
-
--- 正在导出表  spider.sp_websites_pattern 的数据：~0 rows (大约)
-/*!40000 ALTER TABLE `sp_websites_pattern` DISABLE KEYS */;
-/*!40000 ALTER TABLE `sp_websites_pattern` ENABLE KEYS */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
 /*!40014 SET FOREIGN_KEY_CHECKS=IF(@OLD_FOREIGN_KEY_CHECKS IS NULL, 1, @OLD_FOREIGN_KEY_CHECKS) */;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

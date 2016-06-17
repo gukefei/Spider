@@ -23,14 +23,16 @@ class db:
         if cursor == '':
             cursor = self.cursor
         fields = data.keys()
-        values = []
+        fieldstr = ''
+        valuestr = ''
         for f in fields:
-            values.append(data[f])
-        fields = str(tuple(fields))
-        values = str(tuple(values))
-        sql = 'INSERT INTO %s%s VALUES%s' % table, fields, values
+            fieldstr += f + ','
+            valuestr = valuestr + '%(' + f + ')s,'
+        fieldstr = fieldstr[0:-1]
+        valuestr = valuestr[0:-1]
+        sql = 'INSERT INTO ' + table + '(' + fieldstr + ') VALUES(' + valuestr + ')'
         try:
-            cursor.execute(sql)
+            cursor.execute(sql, data)
             insert_id = self.conn.insert_id()
             self.conn.commit()
             return insert_id

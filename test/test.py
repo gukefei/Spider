@@ -28,10 +28,21 @@ import re
 # else:
 #     print('not found')
 from urllib import parse
-url = r'https://docs.python.org/3.5/search.html?q=parse&check_keywords=yes&area=default'
-r=parse.urlparse(url)
-print(r)
-print(r.scheme)
-a=[1,2,3]
-print(str(tuple(a)))
 
+url = r'https://docs.python.org:23/3.5/search.html?q=parse&check_keywords=yes&area=default#dfdf'
+r = parse.urlparse(url)
+print(type(r))
+print(r)
+query = r.query
+query = query.split('&')
+p = dict()
+for q in query:
+    param = q.split('=')
+    p[ param[0]] = param[1]
+    # print(param[0:1])
+    # print(param[1:])
+p['s']=60
+url=r.scheme+'://'+r.netloc+r.path+'?'+parse.urlencode(p)
+if r.fragment!='':
+    url+='#'+r.fragment
+print(url)

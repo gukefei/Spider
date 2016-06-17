@@ -2,6 +2,7 @@ from selenium import webdriver
 from pyquery import PyQuery as pq
 import re
 
+
 class spideTest:
     phantomjs_path = r'C:\Users\malama_sz01\Desktop\phantomjs-2.1.1-windows\bin\phantomjs.exe'
 
@@ -33,11 +34,6 @@ class spideTest:
                 data = product(pattern_detail).html()
             print(str(i) + '---' + data)
             i += 1
-
-    def page(self):
-        # 页码分析
-        page = self.doc('span.pagnRA a').attr('href')
-        print(page)
 
     def stripHtml(html):
         p = re.compile(r'<[^>]+>', re.S)

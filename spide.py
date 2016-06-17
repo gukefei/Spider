@@ -13,8 +13,8 @@ class spide:
     # 列表页采集
     def listSpide(self, data):
         for p in data:
-            spider = ListSpider()
-            spider.spide(p['id'])
+            spider = ListSpider(p['id'])
+            spider.spide()
         pass
 
     # 根据指定条件检索出需要进行采集的url
@@ -34,8 +34,7 @@ class spide:
 
 if __name__ == '__main__':
     spide = spide()
-    urls=spide.urls(1)
-    print(urls)
-    pass
+    urls = spide.urls(1)
+    spide.listSpide(urls)
 else:
     pass

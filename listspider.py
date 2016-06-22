@@ -44,7 +44,6 @@ class ListSpider:
             browser.get(self.url)
             time.sleep(self.__timewait)
             content = browser.page_source
-            # self.import_to_html(page, content)
             doc = pq(content)
             goods = doc(self.pattern)
             for p in goods:
@@ -59,13 +58,19 @@ class ListSpider:
                 good['currency'] = self.currency
                 good['website_id'] = self.website_id
                 detail_url = product(self.detail_url_pattern).attr(self.detail_url_pattern_attr)
-                detail_url_id = self.save_detail_url({"url": detail_url, "website_id": self.website_id})  # 保存该商品的详情url
-                if detail_url_id != False:
-                    detail_url_id = int(detail_url_id)
+                try:
+                    # 保存商品详情页的url地址
+                    detail_url_data = {"url": detail_url, "website_id": self.website_id}
+                    self.database.cursor.execute(
+                        self.database.insert_sql('sp_detail_urls', detail_url_data), detail_url_data)
+                    detail_url_id = int(self.database.conn.insert_id())
                     good['url_id'] = detail_url_id
-                    self.database.insert('sp_goods', good)
+                    # 保存采集到的商品
+                    self.database.cursor.execute(self.database.insert_sql('sp_goods', good), good)
+                    self.database.conn.commit()
                     counter += 1
-                else:
+                except:
+                    self.database.conn.rollback()
                     continue
             page_step = self.page_step * page
             self.url = self.page_url(self.url, self.page, page_step)
@@ -73,10 +78,14 @@ class ListSpider:
         browser.close()
         return counter
 
-    # 处理翻页url地址
-    # pagepara:url中用来标示翻页的变量名称
-    # page:翻页变量的具体值
     def page_url(self, url, pagepara, page):
+        """
+        处理翻页url地址
+        :param url:
+        :param pagepara: url中用来标示翻页的变量名称
+        :param page: 翻页变量的具体值
+        :return:
+        """
         urlinfo = parse.urlparse(url)
         query = urlinfo.query.split('&')
         p = dict()
@@ -89,22 +98,34 @@ class ListSpider:
             url += '#' + urlinfo.fragment
         return url
 
-    # 保存商品详情页的链接地址，同时返回新增记录的id
-
     def save_detail_url(self, data):
+        """
+        保存商品详情页的链接地址，同时返回新增记录的id
+        :param data:
+        :return:
+        """
         d = self.database.insert('sp_detail_urls', data)
         return d
 
-    # 去除html标签
     @staticmethod
     def strip_html(html):
+        """
+        去除html标签
+        :param html:
+        :return:
+        """
         p = re.compile(r'<[^>]+>', re.S)
         html = p.sub('', html)
         return html
 
-    # 将列表页的html内容存储
     @staticmethod
     def import_to_html(url, html):
+        """
+        将列表页的html内容存储
+        :param url:
+        :param html:
+        :return:
+        """
         fp = open('./html/' + str(url) + '.html', 'wb+')
         html = html.encode('utf-8')
         fp.write(html)

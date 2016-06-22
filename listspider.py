@@ -4,6 +4,7 @@ from config import config
 from db import db
 import re
 from urllib import parse
+import time
 
 
 class ListSpider:
@@ -31,21 +32,25 @@ class ListSpider:
         conf = config()
         self.__phantomjs = conf.phantomjs_path
         self.__list_spide_pages = conf.list_spide_pages
+        self.__timewait = conf.timewait
 
     def spide(self):
-        page = 0
+        page = 1
         browser = webdriver.PhantomJS(self.__phantomjs)
-        while page < self.__list_spide_pages:  # 采集页数在配置文件设定的页数范围内时，开始进行采集
+        counter = 0  # 商品入库计数器
+        while page <= self.__list_spide_pages:  # 采集页数在配置文件设定的页数范围内时，开始进行采集
             if self.url == False:  # 没有采集url，则直接终止采集
                 break
             browser.get(self.url)
+            time.sleep(self.__timewait)
             content = browser.page_source
+            # self.importtohtml(page, content)
             doc = pq(content)
             goods = doc(self.pattern)
             for p in goods:
                 product = pq(p)
                 good = dict()
-                good['name_cn'] = self.stripHtml(product(self.name_pattern).text())
+                good['name_cn'] = self.striphtml(product(self.name_pattern).text())
                 price = product(self.price_pattern).text()
                 pattern = re.compile(r'(\d+\.\d+)')
                 match = pattern.search(price)
@@ -54,24 +59,30 @@ class ListSpider:
                 good['currency'] = self.currency
                 good['website_id'] = self.website_id
                 detail_url = product(self.detail_url_pattern).attr(self.detail_url_pattern_attr)
-                detail_url_id = self.saveDetailUrl({"url": detail_url, "website_id": self.website_id})  # 保存该商品的详情url
+                detail_url_id = self.savedetailurl({"url": detail_url, "website_id": self.website_id})  # 保存该商品的详情url
                 if detail_url_id != False:
                     detail_url_id = int(detail_url_id)
                     good['url_id'] = detail_url_id
                     self.database.insert('sp_goods', good)
+                    counter += 1
                 else:
                     continue
-            self.url = self.pageUrl(self.url, self.page, self.page_step * page)
+            page_step = self.page_step * page
+            self.url = self.pageurl(self.url, self.page, page_step)
             page += 1
+        browser.close()
+        return counter
 
     # 处理翻页url地址
-    def pageUrl(self, url, pagepara, page):
+    # pagepara:url中用来标示翻页的变量名称
+    # page:翻页变量的具体值
+    def pageurl(self, url, pagepara, page):
         urlinfo = parse.urlparse(url)
         query = urlinfo.query.split('&')
         p = dict()
         for q in query:
             param = q.split('=')
-            p[param[0]] = param[1]
+            p[param[0]] = parse.unquote(param[1])
         p[pagepara] = page
         url = urlinfo.scheme + '://' + urlinfo.netloc + urlinfo.path + '?' + parse.urlencode(p)
         if urlinfo.fragment != '':
@@ -79,15 +90,25 @@ class ListSpider:
         return url
 
     # 保存商品详情页的链接地址，同时返回新增记录的id
-    def saveDetailUrl(self, data):
+
+    def savedetailurl(self, data):
         d = self.database.insert('sp_detail_urls', data)
         return d
 
     # 去除html标签
-    def stripHtml(self, html):
+    @staticmethod
+    def striphtml(html):
         p = re.compile(r'<[^>]+>', re.S)
         html = p.sub('', html)
         return html
+
+    # 将列表页的html内容存储
+    @staticmethod
+    def importtohtml(url, html):
+        fp = open('./html/' + str(url) + '.html', 'wb+')
+        html = html.encode('utf-8')
+        fp.write(html)
+        fp.close()
 
     def __del__(self):
         self.database.conn.close()

@@ -42,10 +42,10 @@ class spideTest:
 
 
 if __name__ == '__main__':
-    url = 'https://s.taobao.com/list?style=grid&seller_type=taobao&oeid=3587000&oeid=4561000&cps=yes&cat=51108009'
-    pattern = '.grid div.items .item'
-    pattern_detail = '.title a.J_ClickStat'
-    rule = 1  # 抽取规则，1-text,2-attr,3-html
-    attr = 'data-href'
+    url = 'https://www.amazon.com/b/ref=s9_acss_bw_cg_BeautCat_2a1?node=11060451&pf_rd_m=ATVPDKIKX0DER&pf_rd_s='
+    pattern = 'ul.s-result-list li'
+    pattern_detail = '.s-consumables-image a'
+    rule = 2  # 抽取规则，1-text,2-attr,3-html
+    attr = 'href'
     test = spideTest(url)
     test.detail(pattern, pattern_detail, rule, attr)

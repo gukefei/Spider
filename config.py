@@ -7,6 +7,7 @@ class config:
         cp = configparser.ConfigParser()
         cp.read('./config.conf')
         self.list_spide_pages = cp.getint('default', 'list_spide_pages')
+        self.timewait = cp.getint('default', 'timewait')
         self.mysql_host = cp.get('mysql', 'db_host')
         self.mysql_user = cp.get('mysql', 'db_user')
         self.mysql_pwd = cp.get('mysql', 'db_pwd')
